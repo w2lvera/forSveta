@@ -1,0 +1,16 @@
+[section 3]
+z11=z2
+z31=z4
+z15=z3
+[section 1]
+z115=z2
+z315=z4
+z1015=z3
+[section 2]
+z151=z2
+z351=z4
+z1051=z3
+[section 6]
+z151=z2
+z351=z4
+z1051=z3

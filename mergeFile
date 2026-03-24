@@ -1,0 +1,147 @@
+#include <stdio.h>
+#include <string.h>
+#define MAX_SECTIONS 50 /*максимум 50 секций*/
+#define MAX_LINES 50 /*максимум 50 строк в секции */
+#define LEN 80 /*максимум 256 символов в строке*/
+struct Record {
+    int id;
+    char inRecord[ MAX_LINES][LEN];
+    int nRecord;
+};
+void printRecord(struct Record r){
+    printf("%d\n", r.id);
+    for (int i = 0; i < r.nRecord; i++)
+        printf("%s",r.inRecord[i]);
+     printf("nInRecords = %d \n", r.nRecord);
+}
+void printRecordFinal(struct Record r,char* name){
+    printf("%s %d]\n",name, r.id);
+    for (int i = 0; i < r.nRecord; i++)
+        printf("%s",r.inRecord[i]);
+    // printf("%d \n", r.nRecord);
+}
+
+void assignRecord(struct Record* a,struct Record* r) {
+        for(int i=0;i<a->nRecord;i++)a->inRecord[i][0]='\0';
+        a->id = r->id;
+        for (int i = 0; i < r->nRecord; i++) {
+            strcpy(a->inRecord[i],r->inRecord[i]);
+        }
+        a->nRecord = r->nRecord;
+
+    }
+
+
+int comp(const void* a, const void* b) {
+    return ((struct Record*)a)->id - ((struct Record*)b)->id;
+}
+int merge(struct Record* f3,struct Record* f1, int nf1, struct Record* f2, int nf2) {
+    // f3 has the result records
+    int min = (nf1 < nf2) ? nf1 : nf2;
+    struct Record* f1const = f1;
+    struct Record* f2const = f2;
+
+    int k=0;//n records in f3
+    int kf1=0;//n records from f1
+    int kf2=0;//n records from f2
+    for (int  i = 0; i < min; i++) {
+        if (f1->id > f2->id) {
+            assignRecord(f3, f2);//wtite f2 to f3
+            k++;
+            kf2++;
+        }
+        else
+        {
+            assignRecord(f3, f1);//wtite f1 to f3
+            kf1++;
+            if (f1->id == f2->id) {//wtite internal records f2 to f3 section
+                kf2++;
+                for (int j = 0; j < 3; j++)
+                    strcpy(f3->inRecord[f1->nRecord + j], f2->inRecord[j]);
+                f3->nRecord += f2->nRecord;
+            }
+        }
+        f1++; f2++; f3++;//next record
+    }
+    //write to f3 remaining records from f1
+    if(kf1 < nf1){
+        for (int j = kf1; j < nf1; j++) {
+            assignRecord(f3, &f1const[j]);
+            f3++;
+        }
+    }
+     //write to f3 remaining records from f2
+    if(kf2 < nf2) {
+        for (int j = kf2; j < nf2; j++) {
+           assignRecord( f3, &f2const[j]);
+            f3++;
+        }
+    }
+    return (nf1 > nf2) ? nf1+k : nf2 + k;
+
+}
+
+int read_file(const char* filename,struct Record* records,char* name) {
+    FILE* f = fopen(filename,"r");
+
+   if (f==NULL) {
+       perror(filename);
+       return;
+   }
+
+    char line[LEN];
+    int nRecords = 0;// all records
+    int nInRecords= 0;//records in section
+    int notFirst = 0;
+   
+    while (fgets(line, LEN, f)) {
+
+        /* если секция*/
+        if (line[0] == '[') {
+            if(notFirst){
+                records[nRecords].nRecord=nInRecords;
+                nRecords++;
+            }
+            notFirst++;
+
+            int id;
+            sscanf(line,"%s%d",name,&id);
+            records[nRecords].id = id;
+            nInRecords = 0;
+        }
+        else{
+            strcpy(records[nRecords].inRecord[nInRecords],line);
+            nInRecords++;
+        }
+    }
+    //last record
+    records[nRecords].nRecord=nInRecords;
+    fclose(f);
+
+    return nRecords;
+}
+
+int main()
+{
+    struct Record f1[MAX_SECTIONS];
+    struct Record f2[MAX_SECTIONS];
+    char name[20];
+    int nf1 = read_file("text1.txt",f1,name);
+    nf1++;
+    int nf2 = read_file("text2.txt",f2,name);
+    nf2++;
+    printf("f1---------%d\n",nf1);
+    for ( int i = 0; i < nf1;i++)printRecord( f1[i]);
+    qsort(f1, 3, sizeof(struct Record), comp);
+    printf("f1--------after sort  -%d\n",nf1);
+    for (int i = 0; i < nf1; i++)printRecord( f1[i]);
+    printf("%d\n",nf2);
+    for ( int i = 0; i < nf2;i++)printRecord( f2[i]);
+    qsort(f2, 4, sizeof(struct Record), comp);
+    printf( "\nf2-------after sort----\n");
+    struct Record f3[10];
+    for (int i = 0; i < nf2; i++)printRecord(f2[i]);
+    int k = merge(f3,f1,3, f2,4);
+    printf( "\n after merge %d\n",k );
+    for (int i = 0; i < k; i++)printRecordFinal(f3[i],name);
+}

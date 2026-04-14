@@ -1,0 +1,74 @@
+#include <iostream>
+#include <string.h>
+void moveLeft(char* s, int k, int n) {
+    for (int i = 0; i < k+1; i++) {
+        char h = s[n];
+        int j;
+        for (j = n; j > 0; j--) {
+            s[j] = s[j - 1];
+        }
+        s[j] = ' ';
+    }
+}
+void moveRight(char* s) {
+    char* h = s;
+    while (*s) {
+        int flag = 0;
+        while (*s == ' ') {
+            h = s;
+            s++;
+        }
+    }
+    for (int i = 0; i < k + 1; i++) {
+        char h = s[n];
+        int j;
+        for (j = n; j > 0; j--) {
+            s[j] = s[j - 1];
+        }
+        s[j] = ' ';
+    }
+}
+void copy(char* str, char* word) {
+    for (int i = 0; i < strlen(word); i++)
+        str[i] = word[i];
+}
+
+void insertWord(char* str, char* word, int n,int nWords) {
+    char* pStr = str;
+    int kWords = 0;
+    while (kWords<=nWords) {
+        char wordComp[100];
+        sscanf_s(pStr, "%s", wordComp, 100);
+        kWords++;
+        if (strcmp(wordComp, word) > 0) {
+            moveLeft(pStr, strlen(word), n);
+            copy(pStr, word);
+            break;
+        }
+        pStr += strlen(wordComp) + 1;
+        n -= strlen(wordComp);
+    }
+}
+int main()
+{
+    char str[] = "vacy masha katy koly alena";
+    char* pStr = str;
+    char word[100];
+    int n = 0;
+    int nWord = 0;
+    while (*pStr) {
+        sscanf_s(pStr, "%s", word,100);
+        nWord++;
+      /*  std::cout << str << "\n";
+        std::cout << word << "\n";*/
+        while (*pStr == ' ') { pStr++; n++; }
+        n += strlen(word);
+        pStr += strlen(word);
+        //вставка слова
+        if(nWord>1)
+            insertWord(str, word, n-1,nWord-1);
+    
+    }
+    std::cout << "\n after sort\n" << str << "\n";
+   
+}

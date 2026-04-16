@@ -1,0 +1,21 @@
+int* merge(int* left, int& nLeft, int* right, int& nRight) {
+	int index = 0, indexL = 0, indexR = 0;
+	int* result = new int[nLeft + nRight];
+	while (indexL < nLeft && indexR < nRight) {
+		result[index++] = left[indexL] < right[indexR] ? left[indexL++] : right[indexR++];
+	}
+	while (index < nLeft + nRight) {
+		result[index++] = (indexL != nLeft) ? left[indexL++] : right[indexR++];
+	}
+	return result;
+}
+ int* mergeSort(int* src, int n) {
+	if (n <=1) {
+		return src;
+	}
+	//int nright = n;
+	int* left = &src[0]; n = n / 2; 
+	int* right = &src[n];
+	return merge(mergeSort(left,n),n, mergeSort(right,n),n);
+ }
+ 
